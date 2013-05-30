@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Demo de Axon - Programania from the trenches</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+</head>
+<body>
+<h1>Demo de Axon</h1>
+
+<p>Estás en la IP {{ip}}</p>
+<a href="/create">Crear una transacción</a>
+<h2>Listado de transacciones</h2>
+<ul>
+{{#transactions}}
+    <li>{{uuid}}: {{status}}</li>
+{{/transactions}}
+</ul>
+</body>
+</html>

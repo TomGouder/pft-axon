@@ -8,9 +8,13 @@ import org.axonframework.commandhandling.SimpleCommandBus;
 import org.axonframework.commandhandling.annotation.AggregateAnnotationCommandHandler;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.commandhandling.gateway.DefaultCommandGateway;
+import org.axonframework.eventhandling.Cluster;
+import org.axonframework.eventhandling.ClusteringEventBus;
+import org.axonframework.eventhandling.DefaultClusterSelector;
 import org.axonframework.eventhandling.EventBus;
-import org.axonframework.eventhandling.SimpleEventBus;
 import org.axonframework.eventhandling.annotation.AnnotationEventListenerAdapter;
+import org.axonframework.eventhandling.async.AsynchronousCluster;
+import org.axonframework.eventhandling.async.FullConcurrencyPolicy;
 import org.axonframework.eventsourcing.EventSourcingRepository;
 import org.axonframework.eventstore.EventStore;
 import org.axonframework.eventstore.mongo.DefaultMongoTemplate;
@@ -19,6 +23,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.UnknownHostException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class AxonBootstrap {
   private static final Logger log = LoggerFactory.getLogger(AxonBootstrap.class);
@@ -28,7 +36,7 @@ public class AxonBootstrap {
     CommandBus commandBus = new SimpleCommandBus();
     // the CommandGateway provides a friendlier API
     CommandGateway commandGateway = new DefaultCommandGateway(commandBus);
-    // we'll store Events on the FileSystem, in the "events/" folder
+
     Mongo mongo = null;
     try {
       mongo = new Mongo("127.0.0.1");
@@ -37,8 +45,12 @@ public class AxonBootstrap {
       throw new RuntimeException(e); // BOOOOOM!
     }
     EventStore eventStore = new MongoEventStore(new DefaultMongoTemplate(mongo));
-    // a Simple Event Bus will do
-    EventBus eventBus = new SimpleEventBus();
+
+    LinkedBlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>();
+    Executor executor = new ThreadPoolExecutor(5, 10, 10, TimeUnit.SECONDS, workQueue);
+    Cluster cluster = new AsynchronousCluster("async", executor, new FullConcurrencyPolicy());
+    EventBus eventBus = new ClusteringEventBus(new DefaultClusterSelector(cluster));
+
     // we need to configure the repository
     EventSourcingRepository repository = new EventSourcingRepository(TransactionAggregate.class);
     repository.setEventStore(eventStore);

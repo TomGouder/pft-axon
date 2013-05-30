@@ -10,10 +10,11 @@ import org.axonframework.commandhandling.annotation.CommandHandler;
 import org.axonframework.eventhandling.annotation.EventHandler;
 import org.axonframework.eventsourcing.annotation.AbstractAnnotatedAggregateRoot;
 import org.axonframework.eventsourcing.annotation.AggregateIdentifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TransactionAggregate extends AbstractAnnotatedAggregateRoot {
-  private static final Boolean lock = false;
-  private static int sequence = 0;
+  private static final Logger log = LoggerFactory.getLogger(TransactionAggregate.class);
   @AggregateIdentifier
   private String uuid;
   private Status status;
@@ -40,16 +41,19 @@ public class TransactionAggregate extends AbstractAnnotatedAggregateRoot {
   public void on(TransactionCreatedEvent event) {
     this.uuid = event.getUuid();
     this.status = event.getStatus();
+    log.info("Procesado evento de creación");
   }
 
   @EventHandler
   public void on(TransactionCommitedEvent event) {
     this.status = event.getStatus();
+    log.info("Procesado evento de commit");
   }
 
   @EventHandler
   public void on(TransactionRolledBackEvent event) {
     this.status = event.getStatus();
+    log.info("Procesado evento de rollback");
   }
 
   public enum Status {

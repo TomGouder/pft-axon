@@ -1,7 +1,9 @@
 package net.programania;
 
 import net.programania.axon.AxonBootstrap;
+import net.programania.commands.CommitTransactionCommand;
 import net.programania.commands.CreateTransactionCommand;
+import net.programania.commands.RollBackTransactionCommand;
 import net.programania.h2.TransactionDao;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import spark.Request;
@@ -32,6 +34,24 @@ public class FrontController extends Controller {
         commandGateway.send(CreateTransactionCommand.factory());
         response.redirect("/");
         return "Transacción creada!";
+      }
+    });
+    get(new Route("/commit/:uuid") {
+      @Override
+      public Object handle(Request request, Response response) {
+        String uuid = request.params(":uuid");
+        commandGateway.send(new CommitTransactionCommand(uuid));
+        response.redirect("/");
+        return "Transacción 'commiteada'!";
+      }
+    });
+    get(new Route("/rollback/:uuid") {
+      @Override
+      public Object handle(Request request, Response response) {
+        String uuid = request.params(":uuid");
+        commandGateway.send(new RollBackTransactionCommand(uuid));
+        response.redirect("/");
+        return "Transacción 'rollbackizada'!";
       }
     });
   }

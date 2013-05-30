@@ -14,7 +14,7 @@
 <h2>Listado de transacciones</h2>
 <ul>
 {{#transactions}}
-    <li>{{uuid}}: {{status}}</li>
+    <li>{{uuid}}: {{status}} <a href="/commit/{{uuid}}">COMMIT</a> <a href="/rollback/{{uuid}}">ROLL BACK</a></li>
 {{/transactions}}
 </ul>
 </body>

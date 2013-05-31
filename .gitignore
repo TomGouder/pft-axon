@@ -4,3 +4,9 @@ target
 test.*.db
 events
 nohup.out
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
